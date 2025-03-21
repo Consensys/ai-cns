@@ -25,21 +25,21 @@ spec:
                 name: ai-cns-app
                 port:
                   number: 3069
-            path: /slack
+            path: /slack69
             pathType: Prefix
           - backend:
               service:
                 name: ai-cns-app
                 port:
                   number: 3070
-            path: /slack
+            path: /slack70
             pathType: Prefix
           - backend:
               service:
                 name: ai-cns-app
                 port:
                   number: 3071
-            path: /slack
+            path: /slack71
             pathType: Prefix
   tls:
     - hosts:

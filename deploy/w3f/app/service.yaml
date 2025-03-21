@@ -15,5 +15,13 @@ spec:
       port: 3069
       protocol: TCP
       targetPort: 3069
+    - name: slack
+      port: 3070
+      protocol: TCP
+      targetPort: 3070
+    - name: slack
+      port: 3071
+      protocol: TCP
+      targetPort: 3071
   selector:
     app.kubernetes.io/name: ai-cns-app
