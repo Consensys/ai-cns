@@ -8,6 +8,7 @@ import { getUserCredits } from "@/contracts/get-user-credits";
 import { createPublicClient, http } from "viem";
 import { lineaSepolia } from "wagmi/chains";
 import { InitiativeAbi } from "@/abi/Initiative.abi";
+import { Button } from "@/components/ui/button";
 
 const publicClient = createPublicClient({
     chain: lineaSepolia, // Ensure it's the correct chain
@@ -154,9 +155,6 @@ function InitiativesList({
                         }));
                         alert("Vote failed!");
                     },
-                    onSettled: () => {
-                        // Remove "voting" state whether success or failure
-                    },
                 }
             );
         } catch (error) {
@@ -265,8 +263,8 @@ function InitiativesList({
                                     5 &&
                                     initiative.status === "IDEATION" &&
                                     !pendingLaunch[initiative.initiativeId] && (
-                                        <button
-                                            className="absolute flex flex-col items-center right-[1px] top-[1px] px-4 py-2 rounded-md bg-gray-800 text-white shadow-md hover:bg-gray-600"
+                                        <Button
+                                            className="absolute flex flex-col items-center right-[1px] top-[1px] px-4 py-2 rounded-md bg-yellow-500 text-sm font-bold"
                                             onClick={() =>
                                                 handleLaunch(
                                                     initiative.initiativeId
@@ -274,7 +272,7 @@ function InitiativesList({
                                             }
                                         >
                                             Launch
-                                        </button>
+                                        </Button>
                                     )}
                                 {initiative.status !== "IDEATION" &&
                                     !pendingLaunch[initiative.initiativeId] && (
@@ -404,11 +402,11 @@ export default function Governance() {
     }, [address]);
 
     return (
-        <div className="flex flex-col h-[calc(100dvh)] p-4">
+        <div className="flex flex-col w-full h-[calc(100dvh)] p-4">
             <div className="flex-1 overflow-y-auto">
                 <PageHeader title="Governance" />
                 <div className="grid grid-cols-[3fr_1fr] gap-6 items-start">
-                    <div className="flex flex-col items-center justify-center rounded-lg p-6 min-h-[400px] w-full">
+                    <div className="flex flex-col items-center justify-center rounded-lg p-6 min-h-[400px]">
                         <h2 className="text-xl font-bold text-white mb-8">
                             Ideas
                         </h2>
@@ -426,7 +424,7 @@ export default function Governance() {
                             />
                         </Suspense>
                     </div>
-                    <div className="flex flex-col items-center gap-4 p-4 border border-gray-700 rounded-lg w-[200px] min-h-[140px] shadow-md bg-gray-900">
+                    <div className="flex flex-col items-start p-4 border border-gray-700 rounded-lg w-[160px] min-h-[140px] shadow-md bg-gray-900">
                         <h2 className="text-md font-semibold text-white">
                             Credit Balanace
                         </h2>

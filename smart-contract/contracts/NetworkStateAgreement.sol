@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.19;
 
+import { NetworkStateInitiatives } from "./NetworkStateInitiatives.sol";
+
 contract NetworkStateAgreement {
     struct UserInfo {
         string userProfileType;
@@ -12,8 +14,11 @@ contract NetworkStateAgreement {
 
     string[] public userProfileTypeAllowedList = ["maker", "instigator", "investor"]; // Allowed user profile types
     string[] public userNatureAgentAllowedList = ["AI", "human"]; // Allowed user nature agents
+    uint256 public constant MAX_CREDITS_PER_USER = 100; // Maximum credit allowed per user
 
     address public owner; // Owner of the contract
+    NetworkStateInitiatives public initiativesContract; // Reference to the Initiatives contract
+
     address payable public networkdStateTreasury; // Address of the treasury contract
     string public constitutionURL; // URL pointing to the constitution document
     mapping(address => UserInfo) public userInformation; // Mapping of users to their information
@@ -28,6 +33,7 @@ contract NetworkStateAgreement {
     );
     event ConstitutionUpdated(string newURL, uint256 timestamp);
     event NetworkStateTreasuryUpdated(address newReceiver, uint256 timestamp);
+    event InitiativesContractAdressUpdated(address newAddress, uint256 timestamp);
 
     /**
      * @dev Modifier to make a function callable only by the owner.
@@ -40,14 +46,17 @@ contract NetworkStateAgreement {
 
     /**
      * @dev Constructor for the NetworkStateAgreement contract.
-     * @param _constitutionURL The URL of the constitution document.
+     * @param _constitutionURL The URL of the constitution.
+     * @param _initiativesAddress The address of the NetworkStateInitiatives contract.
      *
-     * Initializes the contract by setting the owner to the address that deploys the contract.
-     * The constitutionURL is set to the provided _constitutionURL.
+     * Initializes the contract by setting the owner to the address that deploys the contract,
+     * setting the network state treasury address, initializing the initiatives contract,
+     * and setting the constitution URL.
      */
-    constructor(string memory _constitutionURL) {
+    constructor(string memory _constitutionURL, address _initiativesAddress) {
         owner = msg.sender;
         networkdStateTreasury = payable(0x01F8e269CADCD36C945F012d2EeAe814c42D1159);
+        initiativesContract = NetworkStateInitiatives(_initiativesAddress);
         constitutionURL = _constitutionURL;
     }
 
@@ -82,6 +91,7 @@ contract NetworkStateAgreement {
             (bool success, ) = networkdStateTreasury.call{ value: msg.value }("");
             require(success, "Ether forwarding failed");
         }
+        initiativesContract.updateUserCredits(msg.sender, MAX_CREDITS_PER_USER);
         emit AgreementSigned(
             msg.sender,
             _userProfileType,
@@ -143,5 +153,16 @@ contract NetworkStateAgreement {
         require(_newReceiver != address(0), "Invalid address");
         networkdStateTreasury = _newReceiver;
         emit NetworkStateTreasuryUpdated(_newReceiver, block.timestamp);
+    }
+
+    /**
+     * @notice Updates the address of the initiatives contract.
+     * @dev This function sets a new address for the initiatives contract and emits an event.
+     * @param _initiativesContract The address of the new initiatives contract. Must not be the zero address.
+     */
+    function updateInitiativesContract(address _initiativesContract) public {
+        require(_initiativesContract != address(0), "Invalid address");
+        initiativesContract = NetworkStateInitiatives(_initiativesContract);
+        emit InitiativesContractAdressUpdated(_initiativesContract, block.timestamp);
     }
 }

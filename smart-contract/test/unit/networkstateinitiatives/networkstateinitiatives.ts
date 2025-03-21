@@ -35,17 +35,19 @@ describe("NetworkStateInitiatives", function () {
           "this is a zk passport",
           "digital identity",
           this.tags,
+          50,
         );
       this.initiative = await this.networkStateInitiatives.initiatives(0);
     });
 
     it("should return a created initiative", async function () {
       const initiative = await this.networkStateInitiatives.initiatives(0);
-      expect(initiative.instigator).to.equal(this.signers.admin.address);
+      expect(initiative.ideator).to.equal(this.signers.admin.address);
       expect(initiative.title).to.equal("a crypto passport");
       expect(initiative.description).to.equal("this is a zk passport");
       expect(initiative.category).to.equal("digital identity");
       expect(initiative.status).to.equal("IDEATION");
+      expect(initiative.score).to.equal(50);
     });
 
     it("should initialize voter credits on first vote", async function () {

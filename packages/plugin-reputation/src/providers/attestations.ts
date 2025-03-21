@@ -7,14 +7,7 @@ const attestationsProvider: Provider = {
         elizaLogger.info(`⏳ Provider: Fetch peer trust attestations`);
         try {
             const veraxSdk = new VeraxSdk(VeraxSdk.DEFAULT_LINEA_SEPOLIA);
-
-            const portalDataMapper = veraxSdk.portal; // RW Portals
-            const schemaDataMapper = veraxSdk.schema; // RW Schemas
-            const moduleDataMapper = veraxSdk.module; // RW Modules
             const attestationDataMapper = veraxSdk.attestation; // RW Attestations
-            const utilsDataMapper = veraxSdk.utils; // Utils
-
-
             const portalAddress = "0x4787Fd2DfE83C0e5d07d2BA1aEF12Afc5c4fe306"
             const schemaId = "0x8660da4093987072670aba14868d8dc4112ea88a777f7434a54ea8e7925a1a73"
 
@@ -40,8 +33,7 @@ const attestationsProvider: Provider = {
                     - **Trustworthiness:** ${isTrustworthy ? 'Trusted' : 'Not Trusted'}`;
             }).join("\n");
             
-            console.log("## attestation info: ", formattedAttestations);
-            return `**The Consensys Network State (CNS) attestations registered on-chain by the community: **\n${formattedAttestations}`;
+            return `**The Consensys Network State (CNS) issued Verax Trust attestations registered on-chain by the community reflecting trustworthy and untrustworthy agents / CNS netizens: **\n${formattedAttestations}`;
 
         } catch (error) {
 

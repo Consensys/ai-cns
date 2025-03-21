@@ -34,7 +34,7 @@ const ideasProvider: Provider = {
                 const toBlock = Math.min(fromBlock + batchSize, latestBlock);
                 console.log(`🔧 Fetching logs from block ${fromBlock} to ${toBlock}`);
                 const logs = await provider.getLogs({
-                    address: process.env.CNS_INITIATIVES_REGISTRY_ADDRESS,
+                    address: process.env.CNS_INITIATIVE_CONTRACT_ADDRESS,
                     topics: [iface.getEvent("InitiativeCreated").topicHash],
                     fromBlock,
                     toBlock
@@ -70,7 +70,7 @@ const ideasProvider: Provider = {
                     - **Category:** ${initiative.category}`;
             }).join("\n");
 
-            return `**The Consensys Network State (CNS) initiatives registered on-chain by the community (smart contract address: ${process.env.CNS_INITIATIVES_REGISTRY_ADDRESS}): ** ${formattedInitiatives}`;
+            return `**The Consensys Network State (CNS) initiatives registered on-chain by the community (smart contract address: ${process.env.CNS_INITIATIVE_CONTRACT_ADDRESS}): ** ${formattedInitiatives}`;
 
         } catch (error) {
             console.error("Error fetching initiatives:", error);

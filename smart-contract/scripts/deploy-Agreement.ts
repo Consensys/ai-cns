@@ -1,4 +1,5 @@
 import type { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/dist/src/signer-with-address";
+import fs from "fs";
 import { ethers } from "hardhat";
 
 import { verify } from "../scripts/VerifyContract";
@@ -12,25 +13,31 @@ main().catch((error) => {
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  await deployNetworkStateAgreement(deployer, true);
+  await deployNetworkStateAgreement(deployer, true, true);
 }
 
 export async function deployNetworkStateAgreement(
   deployer: SignerWithAddress,
   verifyContract: boolean,
+  filldata: boolean,
 ): Promise<string> {
+  const config = JSON.parse(fs.readFileSync("./scripts/Agreement.json", "utf-8"));
   console.log("Deployer:", deployer.address);
   const factory = (await ethers.getContractFactory("NetworkStateAgreement")) as NetworkStateAgreement__factory;
-  const contract = (await factory.connect(deployer).deploy("")) as NetworkStateAgreement;
+  const contract = (await factory
+    .connect(deployer)
+    .deploy(config.constitutionURL, config.initiativesContractAddress)) as NetworkStateAgreement;
   await contract.waitForDeployment();
   const address = await contract.getAddress();
   console.log("NetworkStateAgreement deployed to:", address);
 
-  await fillData(contract);
+  if (filldata) {
+    await fillData(contract);
+  }
 
   if (verifyContract) {
     setTimeout(async () => {
-      await verify(address, [""]);
+      await verify(address, [config.constitutionURL, config.initiativesContractAddress]);
     }, 10000);
   }
 
@@ -39,6 +46,18 @@ export async function deployNetworkStateAgreement(
 
 async function fillData(contract: NetworkStateAgreement) {
   const constitutionHash = ethers.keccak256(ethers.toUtf8Bytes("A long constitution to empower decentralization"));
+
+  const [acc1, acc2, acc3] = await ethers.getSigners();
+
+  const signature = await acc1.signMessage(ethers.getBytes(constitutionHash));
+  await contract.connect(acc1).signAgreement("maker", "human", constitutionHash, signature);
+
+  const signature2 = await acc2.signMessage(ethers.getBytes(constitutionHash));
+  await contract.connect(acc2).signAgreement("instigator", "human", constitutionHash, signature2);
+
+  const signature3 = await acc3.signMessage(ethers.getBytes(constitutionHash));
+  await contract.connect(acc3).signAgreement("investor", "human", constitutionHash, signature3);
+
   const agents = [
     { privateKey: process.env.PRIVATE_KEY_AGENT_1, profile: "investor", nature: "AI" },
     { privateKey: process.env.PRIVATE_KEY_AGENT_2, profile: "maker", nature: "AI" },

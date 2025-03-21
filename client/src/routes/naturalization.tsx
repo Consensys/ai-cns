@@ -92,10 +92,43 @@ export default function Naturalization() {
         <div className="flex flex-col w-full h-[calc(100dvh)] p-4">
             <div className="flex-1 overflow-y-auto">
                 <PageHeader title="Naturalization" />
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-4 border border-gray-700 rounded-lg p-4  ">
+                <div className="grid px-52 gap-y-4">
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-4 border border-gray-700 rounded-lg px-16 py-4  mt-6">
+                            <span className="text-2xl font-bold">Values</span>
+                            <div className="flex flex-col gap-2">
+                                {cnsValues?.slice(0, 5).map((value, index) => {
+                                    return (
+                                        <span
+                                            key={index}
+                                            className="text-sm text-gray-200"
+                                        >
+                                            {index + 1}. {value}
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                            <div className="text-sm text-gray-400 flex flex-col gap-1">
+                                <span>
+                                    Those values are dynamically voted by the
+                                    community through ETH staking.
+                                </span>
+                                <span>
+                                    <a
+                                        href="https://ethereum-values.consensys.io"
+                                        target="_blank"
+                                        className="text-blue-400"
+                                    >
+                                        More details available here
+                                    </a>
+                                </span>
+                            </div>
+                            <div></div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-4 border border-gray-700 rounded-lg px-16 py-4">
                         <div className="flex flex-row gap-2">
-                            <span className="text-xl font-bold">
+                            <span className="text-2xl font-bold">
                                 Constitution of Consensys Network State (CNS)
                             </span>
                             <DownloadButton
@@ -176,41 +209,10 @@ export default function Naturalization() {
                         </div>
                     </div>
                     <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-4 border border-gray-700 rounded-lg p-4  ">
-                            <span className="text-xl font-bold">Values</span>
-                            <div className="flex flex-col gap-2">
-                                {cnsValues?.slice(0, 10).map((value, index) => {
-                                    return (
-                                        <span
-                                            key={index}
-                                            className="text-sm text-gray-200"
-                                        >
-                                            {index + 1}. {value}
-                                        </span>
-                                    );
-                                })}
-                            </div>
-                            <div className="text-sm text-gray-400 flex flex-col gap-1">
-                                <span>
-                                    Those values are dynamically voted by the
-                                    community through ETH staking.
-                                </span>
-                                <span>
-                                    <a
-                                        href="https://ethereum-values.consensys.io"
-                                        target="_blank"
-                                        className="text-blue-400"
-                                    >
-                                        More details available here
-                                    </a>
-                                </span>
-                            </div>
-                            <div></div>
-                        </div>
-                        <div className="flex flex-col gap-2 mt-6">
+                        <div className="flex flex-col gap-2 mt-6 px-24 pb-4">
                             <div className="grid grid-cols-2 items-center gap-2">
                                 <div className="font-bold text-blue-400">
-                                    Profile
+                                    Primary Role
                                 </div>
                                 <select
                                     name="profileType"
@@ -230,7 +232,7 @@ export default function Naturalization() {
                             </div>
                             <div className="grid grid-cols-2 items-center gap-2">
                                 <div className="font-bold text-blue-400">
-                                    Nature
+                                    Entity Type
                                 </div>
                                 <select
                                     name="agentNature"
@@ -245,9 +247,9 @@ export default function Naturalization() {
                                     <option value="AI">AI Agent</option>
                                 </select>
                             </div>
-                            <div className="grid grid-cols-2 items-center gap-2">
+                            <div className="grid grid-cols-2 items-center gap-2 mb-6">
                                 <div className="font-bold text-blue-400">
-                                    Contribution
+                                    Open Contribution
                                 </div>
                                 <div className="grid grid-cols-2 items-center gap-2">
                                     <Input
@@ -282,7 +284,7 @@ export default function Naturalization() {
                                         ? "Switch Network to Join"
                                         : isNetizen
                                         ? "You're already a CNS netizen"
-                                        : "Join the State"}
+                                        : "Sign to Join the Network State"}
                                 </Button>
                             )}
                         </div>

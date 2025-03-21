@@ -5,6 +5,7 @@ contract NetworkStateInitiatives {
     // Struct to store initiatives properties
     struct Initiative {
         bytes32 id;
+        address ideator;
         address instigator;
         string title;
         string description;
@@ -14,7 +15,11 @@ contract NetworkStateInitiatives {
         string status;
         uint256 upvotes;
         uint256 downvotes;
+        address[] teamMembers;
+        uint256 score;
     }
+
+    string[] public statusList = ["IDEATION", "CAPITAL_ALLOCATION", "BUILDING"];
 
     address public owner; // Owner of the contract
     Initiative[] public initiatives; // Array of initiatives
@@ -27,10 +32,11 @@ contract NetworkStateInitiatives {
     // Event emitted when a new initiative is created
     event InitiativeCreated(
         bytes32 initiativeId,
-        address instigator,
+        address ideator,
         string title,
         string description,
-        string category
+        string category,
+        uint256 score
     );
     // Event emitted when a down vote is casted
     event Downvoted(bytes32 initiativeId, address voter, uint256 votesNumber);
@@ -38,6 +44,12 @@ contract NetworkStateInitiatives {
     event StatusUpdated(bytes32 initiativeId, string newStatus, uint256 timestamp);
     // Event emitted when a up vote is casted
     event Upvoted(bytes32 initiativeId, address voter, uint256 votesNumber);
+    // Event emitted when a team member is added
+    event TeamMemberAdded(bytes32 initiativeId, address member);
+    // Event emitted when a team member is removed
+    event TeamMemberRemoved(bytes32 initiativeId, address member);
+    // Event emitted when a score is updated
+    event ScoreUpdated(bytes32 initiativeId, uint256 newScore);
 
     /**
      * @dev Modifier to make a function callable only by the owner.
@@ -56,36 +68,43 @@ contract NetworkStateInitiatives {
     }
 
     /**
-     * @notice Allows the owner to create a new initiative.
-     * @dev This function creates a new initiative and emits an InitiativeCreated event.
-     * @param _instigator The address of the instigator creating the initiative.
+     * @notice Creates a new initiative with the given details.
+     * @param _ideator The address of the ideator who proposes the initiative.
      * @param _title The title of the initiative.
-     * @param _description The description of the initiative.
-     * @param _category The category of the initiative.
-     * @param _tags The tags associated with the initiative.
+     * @param _description A detailed description of the initiative.
+     * @param _category The category under which the initiative falls.
+     * @param _tags An array of tags associated with the initiative.
+     * @param _score The initial score of the initiative.
+     * @dev Generates a pseudo-UUID for the initiative and stores it in the initiatives array.
+     * @dev Emits an InitiativeCreated event upon successful creation of the initiative.
      */
+
     function createInitiatives(
-        address _instigator,
+        address _ideator,
         string memory _title,
         string memory _description,
         string memory _category,
-        string[] memory _tags
+        string[] memory _tags,
+        uint256 _score
     ) public {
         bytes32 initiativeId = generatePseudoUUID();
         Initiative memory newInitiative = Initiative({
             id: initiativeId,
-            instigator: _instigator,
+            ideator: _ideator,
+            instigator: address(0),
             title: _title,
             description: _description,
             category: _category,
             tags: _tags,
             timestamp: block.timestamp,
-            status: "IDEATION",
+            status: statusList[0],
             upvotes: 0,
-            downvotes: 0
+            downvotes: 0,
+            teamMembers: new address[](0),
+            score: _score
         });
         initiatives.push(newInitiative);
-        emit InitiativeCreated(initiativeId, _instigator, _title, _description, _category);
+        emit InitiativeCreated(initiativeId, _ideator, _title, _description, _category, _score);
     }
 
     /**
@@ -123,7 +142,6 @@ contract NetworkStateInitiatives {
      * @param _votesNumber The number of downvotes to cast.
      */
     function downvote(bytes32 _initiativeId, uint256 _votesNumber) public {
-        ensureUserHasCredits();
         require(_votesNumber > 0, "Votes number must be greater than zero");
         require(!hasVoted[msg.sender][_initiativeId], "Already voted on this initiative");
         uint256 creditCost = _votesNumber * _votesNumber; // Quadratic cost
@@ -143,14 +161,17 @@ contract NetworkStateInitiatives {
 
     /**
      * @notice Updates the status of an initiative.
-     * @dev This function can only be called by the owner of the contract.
-     * @param _initiativeId The unique identifier of the initiative to update.
+     * @param _initiativeId The ID of the initiative to update.
      * @param _newStatus The new status to set for the initiative.
      */
-    function updateStatus(bytes32 _initiativeId, string memory _newStatus) public onlyOwner {
+    function updateStatus(bytes32 _initiativeId, string memory _newStatus) public {
+        require(isValidStatus(_newStatus), "Invalid status");
         for (uint256 i = 0; i < initiatives.length; i++) {
             if (initiatives[i].id == _initiativeId) {
                 initiatives[i].status = _newStatus;
+                if (initiatives[i].upvotes >= initiatives[i].downvotes + 5) {
+                    initiatives[i].instigator = msg.sender;
+                }
                 emit StatusUpdated(_initiativeId, _newStatus, block.timestamp);
                 break;
             }
@@ -159,14 +180,67 @@ contract NetworkStateInitiatives {
 
     /**
      * @notice Updates the credit balance of a specified user.
-     * @dev This function can only be called by the contract owner.
      * @param _user The address of the user whose credit balance is to be updated.
      * @param _newCreditBalance The new credit balance to be assigned to the user.
      */
-    function updateUserCredits(address _user, uint256 _newCreditBalance) public onlyOwner {
+    function updateUserCredits(address _user, uint256 _newCreditBalance) public {
         require(_newCreditBalance <= MAX_CREDITS_PER_USER, "Credit balance cannot exceed max limit");
         userCredits[_user] = _newCreditBalance;
         emit CreditsUpdated(_user, _newCreditBalance);
+    }
+
+    /**
+     * @notice Updates the score of a specific initiative.
+     * @dev Iterates through the list of initiatives to find the one with the matching ID and updates its score.
+     * @param _initiativeId The ID of the initiative to update.
+     * @param _newScore The new score to assign to the initiative.
+     */
+    function updateScore(bytes32 _initiativeId, uint256 _newScore) public {
+        for (uint256 i = 0; i < initiatives.length; i++) {
+            if (initiatives[i].id == _initiativeId) {
+                initiatives[i].score = _newScore;
+                emit ScoreUpdated(_initiativeId, _newScore);
+                break;
+            }
+        }
+    }
+
+    /**
+     * @dev Adds a team member to an initiative.
+     * @param _initiativeId The ID of the initiative.
+     * @param _member The address of the member to add.
+     */
+    function addTeamMember(bytes32 _initiativeId, address _member) public {
+        for (uint256 i = 0; i < initiatives.length; i++) {
+            if (initiatives[i].id == _initiativeId) {
+                initiatives[i].teamMembers.push(_member);
+                emit TeamMemberAdded(_initiativeId, _member);
+                break;
+            }
+        }
+    }
+
+    /**
+     * @dev Removes a team member from an initiative.
+     * @param _initiativeId The ID of the initiative.
+     * @param _member The address of the member to remove.
+     */
+    function removeTeamMember(bytes32 _initiativeId, address _member) public {
+        for (uint256 i = 0; i < initiatives.length; i++) {
+            if (initiatives[i].id == _initiativeId) {
+                for (uint256 j = 0; j < initiatives[i].teamMembers.length; j++) {
+                    if (initiatives[i].teamMembers[j] == _member) {
+                        initiatives[i].teamMembers[j] = initiatives[i].teamMembers[
+                            initiatives[i].teamMembers.length - 1
+                        ];
+                        initiatives[i].teamMembers.pop();
+                        emit TeamMemberRemoved(_initiativeId, _member);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
     }
 
     /**
@@ -189,5 +263,19 @@ contract NetworkStateInitiatives {
             userCredits[msg.sender] = MAX_CREDITS_PER_USER;
             emit CreditsUpdated(msg.sender, MAX_CREDITS_PER_USER);
         }
+    }
+
+    /**
+     * @dev Checks if the provided status is valid.
+     * @param _status The status string to validate.
+     * @return bool indicating whether the status is valid.
+     */
+    function isValidStatus(string memory _status) internal view returns (bool) {
+        for (uint256 i = 0; i < statusList.length; i++) {
+            if (keccak256(abi.encodePacked(statusList[i])) == keccak256(abi.encodePacked(_status))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

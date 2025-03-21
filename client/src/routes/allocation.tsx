@@ -30,15 +30,17 @@ export default function CapitalAllocation() {
     return (
         <div className="flex flex-col w-full h-[calc(100dvh)] p-4">
             <div className="flex-1 overflow-y-auto">
-                <PageHeader title="Capital Allocation" />
+                <PageHeader title="Resource Allocation" />
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-4">
                         {capitalAllocation.map((a, i) => {
                             // temp for demo, fake balance
-                            a.balance =
-                                a.balance === 0
-                                    ? a.balance
-                                    : 1252600000000000000 * (i + 1);
+                            if (i <= 2) {
+                                a.balance =
+                                    a.balance === 0
+                                        ? a.balance
+                                        : 1252600000000000000 * (i + 1) * 1.333;
+                            }
                             return (
                                 <InitiativeCapitalAllocation
                                     key={a.initiativeId}
