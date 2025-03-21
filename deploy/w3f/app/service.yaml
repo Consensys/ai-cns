@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-cns-app
+  namespace: ai-cns
+  labels:
+    app.kubernetes.io/name: ai-cns-app
+spec:
+  ports:
+    - name: http
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+    - name: slack
+      port: 3069
+      protocol: TCP
+      targetPort: 3069
+  selector:
+    app.kubernetes.io/name: ai-cns-app

@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ai-cns-app
+  namespace: ai-cns
+  labels:
+    app.kubernetes.io/name: ai-cns-app
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ai-cns-app
