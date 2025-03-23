@@ -37,6 +37,8 @@ WORKDIR /app
 # Copy application code
 COPY . .
 
+RUN git submodule update --init --recursive
+
 # Install dependencies
 RUN pnpm install
 
