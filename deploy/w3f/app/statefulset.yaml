@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/name: ai-cns-app
+  name: ai-cns-app
+  namespace: ai-cns
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ai-cns-app
+  serviceName: ai-cns-app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ai-cns-app
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: ai-cns
+          image: 992382680272.dkr.ecr.eu-west-3.amazonaws.com/sandbox-dev-ai-cns:main-1c4418f
+          command: ["sh", "-c"]
+          args: ["pnpm start --characters='lubAIn.character.json,vitalAIk.character.json,satoshAI.character.json'"]
+          envFrom:
+            - secretRef:
+                optional: false
+                name: ai-cns-app
+          env:
+            - name: CHARACTER.LUBAIN.SLACK_APP_ID
+              value: "A08F72TBG9H"
+            - name: CHARACTER.LUBAIN.SLACK_CLIENT_ID
+              value: "8497303115941.8517095390323"
+            - name: CHARACTER.LUBAIN.SLACK_SERVER_PORT
+              value: "3069"
+            - name: CHARACTER.VITALAIK.SLACK_APP_ID
+              value: "A08F808GNAF"
+            - name: CHARACTER.VITALAIK.SLACK_CLIENT_ID
+              value: "8497303115941.8518008566355"
+            - name: CHARACTER.VITALAIK.SLACK_SERVER_PORT
+              value: "3070"
+            - name: CHARACTER.SATOSHAI.SLACK_APP_ID
+              value: "A08F6LUPAF8"
+            - name: CHARACTER.SATOSHAI.SLACK_CLIENT_ID
+              value: "8497303115941.8516708792518"
+            - name: CHARACTER.SATOSHAI.SLACK_SERVER_PORT
+              value: "3071"
+            - name: CNS_VERAX_PORTAL_ID
+              value: "0x4787Fd2DfE83C0e5d07d2BA1aEF12Afc5c4fe306"
+            - name: CNS_VERAX_SCHEMA_ID
+              value: "0x8660da4093987072670aba14868d8dc4112ea88a777f7434a54ea8e7925a1a73"
+            - name: CNS_TOKEN_ADDRESS
+              value: "0x8d16c48c8E5d392f91b5BCC53DdfbdB26523a7Ae"
+            - name: CNS_CONSTITUTION_HASH
+              value: "QmZCXBiYSMVJe5vUq3s62L2YTugGCY2WZ8m6wb9ra99wAc"
+            - name: CNS_AGREEMENT_CONTRACT_ADDRESS
+              value: "0xbE67C358d5439D558EDd5D009c5cA01b830E426A"
+            - name: CNS_INITIATIVE_CONTRACT_ADDRESS
+              value: "0x43464d868acfEa977a198cbd89cA46d6C55Be494"
+            - name: SUPABASE_URL
+              value: "https://erqahqyzhirixswuiplt.supabase.co"
+            - name: EVM_PROVIDER_URL
+              value: "https://rpc.sepolia.linea.build"
+            - name: SERVER_URL
+              value: localhost
+            - name: SERVER_PORT
+              value: 3000
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+            - containerPort: 5173
+              protocol: TCP           
+            - containerPort: 3069
+              protocol: TCP
+            - containerPort: 3070
+              protocol: TCP
+            - containerPort: 3071
+              protocol: TCP           
+          volumeMounts:
+            - name: data
+              mountPath: /app/agent/data
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 2500m
+              memory: 2Gi
+            requests:
+              cpu: 2000m
+              memory: 2Gi
+          livenessProbe:
+            failureThreshold: 3
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3000
+            timeoutSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi

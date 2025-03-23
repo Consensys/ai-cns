@@ -1,9 +1,9 @@
+[submodule "characters"]
+	path = characters
+	url = https://github.com/elizaos/characters
 [submodule "packages/adapter-supabase"]
 	path = packages/adapter-supabase
-	url = git@github.com:elizaos-plugins/adapter-supabase.git
+	url = https://github.com/elizaos-plugins/adapter-supabase
 [submodule "packages/client-slack"]
 	path = packages/client-slack
-	url = git@github.com:elizaos-plugins/client-slack.git
-[submodule "packages/client-telegram"]
-	path = packages/client-telegram
-	url = git@github.com:elizaos-plugins/client-telegram.git
+	url = https://github.com/elizaos-plugins/client-slack

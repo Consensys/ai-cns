@@ -1,0 +1,62 @@
+name: Build & Push Docker image to w3f ECR
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - 'main'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-3
+  ECR_REGISTRY: 992382680272.dkr.ecr.eu-west-3.amazonaws.com
+  ECR_ROLE: arn:aws:iam::992382680272:role/ecr-push-sandbox-dev-ai-cns
+  BASE_IMAGE_NAME: 992382680272.dkr.ecr.eu-west-3.amazonaws.com/sandbox-dev-ai-cns
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.BASE_IMAGE_NAME }}
+          flavor: |
+            latest=false
+          tags: |
+            type=ref,event=pr
+            type=raw,value={{branch}}-{{sha}},enable={{is_default_branch}}
+            type=ref,event=tag
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ECR_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ECR_REGISTRY }}
+
+      - name: Set up docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ GitHub.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: Dockerfile

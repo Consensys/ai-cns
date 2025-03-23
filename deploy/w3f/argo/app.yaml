@@ -1,0 +1,15 @@
+# Deployed in w3f sandbox dev environment, hackathon cluster
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-cns
+spec:
+  project: apps-sandbox-dev
+  destination:
+    name: sandbox-dev-hackathon-eu
+    namespace: ai-cns
+  source:
+    repoURL: https://github.com/ConsenSys/ai-cns.git
+    path: deploy/w3f/app
+    targetRevision: HEAD
