@@ -1,4 +1,5 @@
 import type { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/dist/src/signer-with-address";
+import fs from "fs";
 import { ethers } from "hardhat";
 
 import type { CNSToken } from "../src/types/CNSToken";
@@ -16,17 +17,17 @@ async function main() {
 }
 
 export async function deployCNSToken(deployer: SignerWithAddress, verifyContract: boolean): Promise<string> {
-  const MINTER_ADDRESS = "0x01f8e269cadcd36c945f012d2eeae814c42d1159";
+  const config = JSON.parse(fs.readFileSync("./scripts/CNSToken.json", "utf-8"));
   console.log("Deployer:", deployer.address);
   const factory = (await ethers.getContractFactory("CNSToken")) as CNSToken__factory;
-  const contract = (await factory.connect(deployer).deploy(deployer.address, MINTER_ADDRESS)) as CNSToken;
+  const contract = (await factory.connect(deployer).deploy(deployer.address, config.minterAddress)) as CNSToken;
   await contract.waitForDeployment();
   const address = await contract.getAddress();
   console.log("CNSToken deployed to:", address);
 
   if (verifyContract) {
     setTimeout(async () => {
-      await verify(address, [deployer.address, MINTER_ADDRESS]);
+      await verify(address, [deployer.address, config.minterAddress]);
     }, 10000);
   }
 

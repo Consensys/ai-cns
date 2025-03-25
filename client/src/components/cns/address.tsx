@@ -33,19 +33,19 @@ const demoEnsTweakForMembers = [
     },
     {
         address: "0x01F8e269CADCD36C945F012d2EeAe814c42D1159",
-        ensName: "patmahomes.linea.eth",
+        ensName: "lubAIn.linea.eth",
     },
     {
         address: "0xAf38d70E2Bfa1d13f025dB50315c9B4ec00a2b0c",
-        ensName: "esteban.linea.eth",
+        ensName: "vitalAIk.linea.eth",
     },
     {
         address: "0x2799A7D358C347a40293ab996FeD08aff8157393",
-        ensName: "isabel-pro.linea.eth",
+        ensName: "satoshAI.linea.eth",
     },
     {
         address: "0x1e963CE147bd7e5FB29AE306c2f4145874593556",
-        ensName: "hotchili.linea.eth",
+        ensName: "eliza.linea.eth",
     },
     {
         address: "0x65a4CeC9f1c6060f3b987d9332Bedf26e8E86D17",
@@ -54,6 +54,10 @@ const demoEnsTweakForMembers = [
     {
         address: "0x224b11F0747c7688a10aCC15F785354aA6493ED6",
         ensName: "dayksx.linea.eth",
+    },
+    {
+        address: "0x4D8aD86dEe297B5703E92465692999abDB0508c8",
+        ensName: "john.linea.eth",
     },
 ];
 

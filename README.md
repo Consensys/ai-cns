@@ -8,11 +8,18 @@ Cypherpunk hackathon 2025
 
 ## ✨ Features
 
-- 🛠️ Slack support
-- 👥 Multi-agents and room support
-- 📚 Easily ingest and interact with your documents
-- 💾 Census
 - 🚀 Full Network State Platform
+- 👥 Multi-agents (LubAIn, VitalAIk, SatoshAI)
+- 👥 Wallet-enabled AI Agent, able to issue onchain attestation, transfer reputation point, record & curate ideas...
+- 🛠️ Slack & telegram integration
+- 💾 Census
+- 💾 Ideation
+- 💾 Quadratic voting
+- 💾 Resource Allocation
+- 💾 Identity & Reputation Mechanism (attestations, reputation point)
+- AI
+- ...
+
 
 ## 🚀 Quick Start
 
@@ -34,24 +41,21 @@ cp .env.example .env
 
 Required environment variables:
 ```
-# LLM Configuration
-OPENAI_API_KEY=
+# OpenAI Configuration
+OPENAI_API_KEY=         # OpenAI API key, starting with sk-
 
 # EVM
-EVM_PRIVATE_KEY=0x71092af342a22e058747efd5a67e7259f9dd0935cbb913fb6ec58f9834e87c74          # Add the "0x" prefix infront of your private key string                  
-EVM_PROVIDER_URL2=https://polygon-amoy.drpc.org #Polygon Amoy
-EVM_PROVIDER_URL=https://linea-sepolia.infura.io/v3/296Owf7VKF2IhHACZCp2Y8Rrqbm #Linea Sepolia
-EVM_PUBLIC_KEY=0x01f8e269cadcd36c945f012d2eeae814c42d1159
+EVM_PRIVATE_KEY=          # Add the "0x" prefix infront of your private key string
+EVM_PROVIDER_URL=https://rpc.linea.build #Linea Sepolia
+EVM_PUBLIC_KEY=
 
 # CNS
-CNS_AGREEMENT_CONTRACT_ADDRESS=0x0ba9029D9C3787B458679011e3e99Ce7777E32C1
-CNS_INITIATIVE_CONTRACT_ADDRESS=0xeBdf30E2Aa41b3e9e54E669c44ba05d798357F62
 CNS_VERAX_PORTAL_ID=0x4787Fd2DfE83C0e5d07d2BA1aEF12Afc5c4fe306
 CNS_VERAX_SCHEMA_ID=0x8660da4093987072670aba14868d8dc4112ea88a777f7434a54ea8e7925a1a73
-
-# Supabase Configuration
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
+CNS_CONSTITUTION_HASH=QmZCXBiYSMVJe5vUq3s62L2YTugGCY2WZ8m6wb9ra99wAc
+CNS_AGREEMENT_CONTRACT_ADDRESS=0xd6e86833A8980ad1bAddfF1B8445e644A9F4b4D7
+CNS_INITIATIVE_CONTRACT_ADDRESS=0xC0c8F49Bf5B6410B1d42c33806f0Ce905B6D13e6
+CNS_TOKEN_ADDRESS=0xD0d3DA5416F4D4164af95372a3251E3864Bef78B
 
 # Slack Configuration
 CHARACTER.LUBAIN.SLACK_APP_ID=           # From Basic Information > App Credentials > App ID
@@ -60,11 +64,29 @@ CHARACTER.LUBAIN.SLACK_CLIENT_SECRET=    # From Basic Information > App Credenti
 CHARACTER.LUBAIN.SLACK_SIGNING_SECRET=   # From Basic Information > App Credentials > Signing Secret
 CHARACTER.LUBAIN.SLACK_BOT_TOKEN=       # From OAuth & Permissions > Bot User OAuth Token (starts with xoxb-)
 CHARACTER.LUBAIN.SLACK_VERIFICATION_TOKEN= # From Basic Information > App Credentials > Verification Token
-CHARACTER.LUBAIN.SLACK_SERVER_PORT=  # Must match the port you used with ngrok
+CHARACTER.LUBAIN.SLACK_SERVER_PORT=3069  # Must match the port you used with ngrok
+# Slack Configuration
+CHARACTER.VITALAIK.SLACK_APP_ID=           # From Basic Information > App Credentials > App ID
+CHARACTER.VITALAIK.SLACK_CLIENT_ID=        # From Basic Information > App Credentials > Client ID
+CHARACTER.VITALAIK.SLACK_CLIENT_SECRET=    # From Basic Information > App Credentials > Client Secret
+CHARACTER.VITALAIK.SLACK_SIGNING_SECRET=   # From Basic Information > App Credentials > Signing Secret
+CHARACTER.VITALAIK.SLACK_BOT_TOKEN=       # From OAuth & Permissions > Bot User OAuth Token (starts with xoxb-)
+CHARACTER.VITALAIK.SLACK_VERIFICATION_TOKEN= # From Basic Information > App Credentials > Verification Token
+CHARACTER.VITALAIK.SLACK_SERVER_PORT=3070  # Must match the port you used with ngrok
+# Slack Configuration
+CHARACTER.SATOSHAI.SLACK_APP_ID=           # From Basic Information > App Credentials > App ID
+CHARACTER.SATOSHAI.SLACK_CLIENT_ID=        # From Basic Information > App Credentials > Client ID
+CHARACTER.SATOSHAI.SLACK_CLIENT_SECRET=    # From Basic Information > App Credentials > Client Secret
+CHARACTER.SATOSHAI.SLACK_SIGNING_SECRET=   # From Basic Information > App Credentials > Signing Secret
+CHARACTER.SATOSHAI.SLACK_BOT_TOKEN=       # From OAuth & Permissions > Bot User OAuth Token (starts with xoxb-)
+CHARACTER.SATOSHAI.SLACK_VERIFICATION_TOKEN= # From Basic Information > App Credentials > Verification Token
+CHARACTER.SATOSHAI.SLACK_SERVER_PORT=3071  # Must match the port you used with ngrok
 
+# Telegram Configuration
+TELEGRAM_BOT_TOKEN=
 ```
 
-#### Start Eliza
+#### Start Agentic Platform
 
 For the first time:
 ```bash
@@ -94,11 +116,9 @@ pnpm start:client
 or use lubain
 
 ```bash
-pnpm start --characters="lubain.character.json"
 pnpm start --character="lubain.character.json,vitalaik.character.json,satoshai.character.json"
 ```
 Then read the [Documentation](https://elizaos.github.io/eliza/) to learn how to customize your Eliza.
-
 
 ### Add more plugins
 
@@ -106,20 +126,22 @@ Then read the [Documentation](https://elizaos.github.io/eliza/) to learn how to 
 
 2. run `npx elizaos plugins add @elizaos-plugins/plugin-NAME` to install the plugin into your instance
 
-### Supabase
+#### Supabase
+
+Database initiation./
 
 ```bash
 psql "postgresql://postgres:cypherpunkhackathon@db.erqahqyzhirixswuiplt.supabase.co:5432/postgres"  -f schema.sql
 psql "postgresql://postgres:cypherpunkhackathon@db.erqahqyzhirixswuiplt.supabase.co:5432/postgres"  -f seed.sql
 ```
 
-### Submodules
-
-#### Clone a repo with submodules
+#### Submodules
+Su
+##### Clone a repo with submodules
 `git clone --recursive <repository_url>`
 or if you forget and you just did a git clone, you can still add the git submodules using this command `git submodule update --init --recursive`
 
-#### Commit a submodule
+##### Commit a submodule
 ```bash
 npx elizaos plugins list 
 npx elizaos plugins add @elizaos-plugins/adapter-supabase
@@ -155,54 +177,13 @@ tunnels:
 ngrok start --config ~/.ngrok2/ngrok.yml --all
 ```
 
-## Using Your Custom Plugins
-Plugins that are not in the official registry for ElizaOS can be used as well. Here's how:
-
-### Installation
-
-1. Upload the custom plugin to the packages folder:
-
-```
-packages/
-├─plugin-example/
-├── package.json
-├── tsconfig.json
-├── src/
-│   ├── index.ts        # Main plugin entry
-│   ├── actions/        # Custom actions
-│   ├── providers/      # Data providers
-│   ├── types.ts        # Type definitions
-│   └── environment.ts  # Configuration
-├── README.md
-└── LICENSE
-```
-
-2. Add the custom plugin to your project's dependencies in the agent's package.json:
-
-```json
-{
-  "dependencies": {
-    "@elizaos/plugin-example": "workspace:*"
-  }
-}
-```
-
-3. Import the custom plugin to your agent's character.json
-
-```json
-  "plugins": [
-    "@elizaos/plugin-example",
-  ],
-```
-
-
-
 ## 📁 Project Structure
 ```
 monorepo/
 ├── agent/              # Agent runtime (ElizaOS)
+└── characters/         # AI Agent personas (JSON)
 └── client/             # Front end (React)
-└── contract/           # Smart contract (Harhat)
+└── smart-contract/     # Smart contract (Harhat)
 ├── packages/
 │   ├── core/           # Core Eliza functionality
 │   ├── clients/        # Client implementations

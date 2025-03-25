@@ -1,4 +1,5 @@
 {
-  "constitutionURL": "ttps://ipfs.io/ipfs/xxxxxxxxxxxx",
-  "initiativesContractAddress": "0xeBdf30E2Aa41b3e9e54E669c44ba05d798357F62"
+  "constitutionURL": "https://ipfs.io/ipfs/QmZCXBiYSMVJe5vUq3s62L2YTugGCY2WZ8m6wb9ra99wAc/",
+  "initiativesContractAddress": "0xb71e6DFf61C31A1E8a1b1FAb37A1EC7b1955A86f",
+  "treasuryAddress": "0x01F8e269CADCD36C945F012d2EeAe814c42D1159"
 }

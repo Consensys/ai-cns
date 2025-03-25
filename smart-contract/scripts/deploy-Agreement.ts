@@ -26,7 +26,11 @@ export async function deployNetworkStateAgreement(
   const factory = (await ethers.getContractFactory("NetworkStateAgreement")) as NetworkStateAgreement__factory;
   const contract = (await factory
     .connect(deployer)
-    .deploy(config.constitutionURL, config.initiativesContractAddress)) as NetworkStateAgreement;
+    .deploy(
+      config.constitutionURL,
+      config.initiativesContractAddress,
+      config.treasuryAddress,
+    )) as NetworkStateAgreement;
   await contract.waitForDeployment();
   const address = await contract.getAddress();
   console.log("NetworkStateAgreement deployed to:", address);
@@ -37,7 +41,7 @@ export async function deployNetworkStateAgreement(
 
   if (verifyContract) {
     setTimeout(async () => {
-      await verify(address, [config.constitutionURL, config.initiativesContractAddress]);
+      await verify(address, [config.constitutionURL, config.initiativesContractAddress, config.treasuryAddress]);
     }, 10000);
   }
 

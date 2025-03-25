@@ -1,7 +1,9 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.19;
 
-contract NetworkStateInitiatives {
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+contract NetworkStateInitiatives is ReentrancyGuard {
     // Struct to store initiatives properties
     struct Initiative {
         bytes32 id;
@@ -17,6 +19,7 @@ contract NetworkStateInitiatives {
         uint256 downvotes;
         address[] teamMembers;
         uint256 score;
+        uint256 funding;
     }
 
     string[] public statusList = ["IDEATION", "CAPITAL_ALLOCATION", "BUILDING"];
@@ -26,6 +29,7 @@ contract NetworkStateInitiatives {
     mapping(address => uint256) public userCredits; // Remaining credits per user
     mapping(address => mapping(bytes32 => bool)) public hasVoted; // Track if a user has voted on an initiative
     uint256 public constant MAX_CREDITS_PER_USER = 100; // Maximum credit allowed per user
+    address payable public networkStateTreasury; // Address of the treasury
 
     // event emitted when a user's credit balance is updated
     event CreditsUpdated(address user, uint256 newCreditBalance);
@@ -50,6 +54,14 @@ contract NetworkStateInitiatives {
     event TeamMemberRemoved(bytes32 initiativeId, address member);
     // Event emitted when a score is updated
     event ScoreUpdated(bytes32 initiativeId, uint256 newScore);
+    // Event emitted when a fund is allocated
+    event FundAllocated(bytes32 initiativeId, address funder, uint256 amount);
+    // Event emitted when a fund is withdrawn
+    event FundingWithdrawn(bytes32 initiativeId, address instigator, uint256 amount);
+    // Event emitted when fund is withdrawn in case of emergency
+    event EmergencyWithdrawal(address owner, uint256 amount);
+    // Event emitted when the network state treasury address is updated
+    event NetworkStateTreasuryUpdated(address newReceiver, uint256 timestamp);
 
     /**
      * @dev Modifier to make a function callable only by the owner.
@@ -61,10 +73,34 @@ contract NetworkStateInitiatives {
     }
 
     /**
-     * @dev Constructor that sets the initial constitution hash and assigns the contract owner.
+     * @notice Constructor to initialize the contract with the treasury address.
+     * @param _treasuryAddress The address of the treasury.
      */
-    constructor() {
+    constructor(address _treasuryAddress) {
         owner = msg.sender;
+        networkStateTreasury = payable(_treasuryAddress);
+    }
+
+    /**
+     * @notice Allocates funds to a specific initiative.
+     * @dev This function allows users to send ETH to fund a specific initiative.
+     *      A portion of the sent ETH (10%) is forwarded to the network state treasury.
+     * @param _initiativeId The ID of the initiative to fund.
+     */
+    function allocateFund(bytes32 _initiativeId) public payable nonReentrant {
+        require(msg.value > 0, "Must send ETH to fund");
+        for (uint256 i = 0; i < initiatives.length; i++) {
+            if (initiatives[i].id == _initiativeId) {
+                uint256 treasuryShare = (msg.value * 10) / 100;
+                uint256 initiativeShare = msg.value - treasuryShare;
+
+                (bool success, ) = networkStateTreasury.call{ value: treasuryShare }("");
+                require(success, "Ether forwarding to treasury failed");
+                initiatives[i].funding += initiativeShare;
+                emit FundAllocated(_initiativeId, msg.sender, initiativeShare);
+                break;
+            }
+        }
     }
 
     /**
@@ -101,7 +137,8 @@ contract NetworkStateInitiatives {
             upvotes: 0,
             downvotes: 0,
             teamMembers: new address[](0),
-            score: _score
+            score: _score,
+            funding: 0
         });
         initiatives.push(newInitiative);
         emit InitiativeCreated(initiativeId, _ideator, _title, _description, _category, _score);
@@ -195,7 +232,7 @@ contract NetworkStateInitiatives {
      * @param _initiativeId The ID of the initiative to update.
      * @param _newScore The new score to assign to the initiative.
      */
-    function updateScore(bytes32 _initiativeId, uint256 _newScore) public {
+    function updateScore(bytes32 _initiativeId, uint256 _newScore) public onlyOwner {
         for (uint256 i = 0; i < initiatives.length; i++) {
             if (initiatives[i].id == _initiativeId) {
                 initiatives[i].score = _newScore;
@@ -241,6 +278,47 @@ contract NetworkStateInitiatives {
                 break;
             }
         }
+    }
+
+    /**
+     * @notice Withdraws the funding for a specific initiative.
+     * @dev Only the instigator of the initiative can withdraw the funding.
+     * @param _initiativeId The ID of the initiative to withdraw funding from.
+     */
+    function withdrawInitiativeFunding(bytes32 _initiativeId) public {
+        for (uint256 i = 0; i < initiatives.length; i++) {
+            if (initiatives[i].id == _initiativeId) {
+                require(msg.sender == initiatives[i].instigator, "Only instigator can withdraw");
+                uint256 amount = initiatives[i].funding;
+                require(amount > 0, "No funding available");
+                initiatives[i].funding = 0;
+                payable(msg.sender).transfer(amount);
+                emit FundingWithdrawn(_initiativeId, msg.sender, amount);
+                break;
+            }
+        }
+    }
+
+    /**
+     * @notice Allows the owner to withdraw all ETH from the contract in case of an emergency.
+     * @dev This function can only be called by the owner of the contract.
+     */
+    function withdrawEmergency() public onlyOwner {
+        uint256 contractBalance = address(this).balance;
+        require(contractBalance > 0, "No ETH available");
+        payable(owner).transfer(contractBalance);
+        emit EmergencyWithdrawal(owner, contractBalance);
+    }
+
+    /**
+     * @notice Updates the address of the network state treasury.
+     * @dev This function can only be called by the owner of the contract.
+     * @param _newReceiver The new address to receive the network state treasury funds.
+     */
+    function updateNetworkStateTreasury(address payable _newReceiver) public onlyOwner {
+        require(_newReceiver != address(0), "Invalid address");
+        networkStateTreasury = _newReceiver;
+        emit NetworkStateTreasuryUpdated(_newReceiver, block.timestamp);
     }
 
     /**

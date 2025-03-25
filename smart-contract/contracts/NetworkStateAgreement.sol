@@ -2,8 +2,9 @@
 pragma solidity ^0.8.19;
 
 import { NetworkStateInitiatives } from "./NetworkStateInitiatives.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract NetworkStateAgreement {
+contract NetworkStateAgreement is ReentrancyGuard {
     struct UserInfo {
         string userProfileType;
         string userNatureAgent;
@@ -19,7 +20,7 @@ contract NetworkStateAgreement {
     address public owner; // Owner of the contract
     NetworkStateInitiatives public initiativesContract; // Reference to the Initiatives contract
 
-    address payable public networkdStateTreasury; // Address of the treasury contract
+    address payable public networkStateTreasury; // Address of the treasury contract
     string public constitutionURL; // URL pointing to the constitution document
     mapping(address => UserInfo) public userInformation; // Mapping of users to their information
 
@@ -45,17 +46,15 @@ contract NetworkStateAgreement {
     }
 
     /**
-     * @dev Constructor for the NetworkStateAgreement contract.
-     * @param _constitutionURL The URL of the constitution.
-     * @param _initiativesAddress The address of the NetworkStateInitiatives contract.
-     *
-     * Initializes the contract by setting the owner to the address that deploys the contract,
-     * setting the network state treasury address, initializing the initiatives contract,
-     * and setting the constitution URL.
+     * @notice Constructor to initialize the contract with the constitution URL,
+     * initiatives contract address, and treasury address.
+     * @param _constitutionURL The URL of the constitution document.
+     * @param _initiativesAddress The address of the initiatives contract.
+     * @param _treasuryAddress The address of the treasury.
      */
-    constructor(string memory _constitutionURL, address _initiativesAddress) {
+    constructor(string memory _constitutionURL, address _initiativesAddress, address _treasuryAddress) {
         owner = msg.sender;
-        networkdStateTreasury = payable(0x01F8e269CADCD36C945F012d2EeAe814c42D1159);
+        networkStateTreasury = payable(_treasuryAddress);
         initiativesContract = NetworkStateInitiatives(_initiativesAddress);
         constitutionURL = _constitutionURL;
     }
@@ -74,7 +73,7 @@ contract NetworkStateAgreement {
         string memory _userNatureAgent,
         bytes32 _constitutionHash,
         bytes memory _signature
-    ) public payable {
+    ) public payable nonReentrant {
         //TODO: Implement signature verification
         require(!userInformation[msg.sender].hasAgreed, "Agreement already signed");
         require(isValidProfileType(_userProfileType), "Invalid profile type");
@@ -88,7 +87,7 @@ contract NetworkStateAgreement {
             hasAgreed: true
         });
         if (msg.value > 0) {
-            (bool success, ) = networkdStateTreasury.call{ value: msg.value }("");
+            (bool success, ) = networkStateTreasury.call{ value: msg.value }("");
             require(success, "Ether forwarding failed");
         }
         initiativesContract.updateUserCredits(msg.sender, MAX_CREDITS_PER_USER);
@@ -151,7 +150,7 @@ contract NetworkStateAgreement {
      */
     function updateNetworkStateTreasury(address payable _newReceiver) public onlyOwner {
         require(_newReceiver != address(0), "Invalid address");
-        networkdStateTreasury = _newReceiver;
+        networkStateTreasury = _newReceiver;
         emit NetworkStateTreasuryUpdated(_newReceiver, block.timestamp);
     }
 
@@ -160,7 +159,7 @@ contract NetworkStateAgreement {
      * @dev This function sets a new address for the initiatives contract and emits an event.
      * @param _initiativesContract The address of the new initiatives contract. Must not be the zero address.
      */
-    function updateInitiativesContract(address _initiativesContract) public {
+    function updateInitiativesContract(address _initiativesContract) public onlyOwner {
         require(_initiativesContract != address(0), "Invalid address");
         initiativesContract = NetworkStateInitiatives(_initiativesContract);
         emit InitiativesContractAdressUpdated(_initiativesContract, block.timestamp);

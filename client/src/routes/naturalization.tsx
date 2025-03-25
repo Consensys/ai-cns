@@ -133,7 +133,7 @@ export default function Naturalization() {
                 <div className="grid px-52 gap-y-4">
                     {/* Values Box */}
                     <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-4 border border-gray-700 rounded-lg px-16 py-4  mt-6">
+                        <div className="flex flex-col gap-4 border border-gray-700 rounded-lg px-16 py-6 mt-6">
                             <span className="text-2xl font-bold">Values</span>
                             <div className="flex flex-col gap-2">
                                 {cnsValues?.slice(0, 5).map((value, index) => {
@@ -162,8 +162,7 @@ export default function Naturalization() {
                                     </a>
                                 </span>
                             </div>
-                            <div></div>
-                            <label className="flex items-center gap-2 cursor-pointer">
+                            <label className="flex items-center gap-2 cursor-pointer mt-5">
                                 <input
                                     type="checkbox"
                                     checked={isAgreedValues}
@@ -171,14 +170,14 @@ export default function Naturalization() {
                                         setIsAgreedValues(!isAgreedValues)
                                     }
                                 />
-                                <span className="text-sm">
+                                <span className="text-sm text-gray-200">
                                     I agree with CNS values
                                 </span>
                             </label>
                         </div>
                     </div>
                     {/* Constitution Box */}
-                    <div className="flex flex-col gap-4 border border-gray-700 rounded-lg px-16 py-4">
+                    <div className="flex flex-col gap-4 border border-gray-700 rounded-lg px-16 py-6">
                         <div className="flex flex-row gap-2">
                             <span className="text-2xl font-bold">
                                 Constitution of Consensys Network State (CNS)
@@ -258,7 +257,7 @@ export default function Naturalization() {
                                 constitution as a declaration of their
                                 commitment to its principles.
                             </span>
-                            <label className="mt-3 flex items-center gap-2 cursor-pointer">
+                            <label className="flex items-center gap-2 cursor-pointer mt-5">
                                 <input
                                     type="checkbox"
                                     checked={isAgreedConstitution}
@@ -268,41 +267,49 @@ export default function Naturalization() {
                                         )
                                     }
                                 />
-                                <span className="text-sm">
+                                <span className="text-sm text-gray-200">
                                     I agree with CNS constitution
                                 </span>
                             </label>
                         </div>
                     </div>
                     {/* Netizenship requirements Box */}
-                    <div className="border border-gray-700 rounded-lg px-16 py-4">
+                    <div className="border gap-4 border-gray-700 rounded-lg px-16 py-6">
                         <span className="text-2xl font-bold">
                             Netizenship requirements
                         </span>
+                        <div className="text-sm text-gray-400 flex flex-col gap-1 mt-6">
+                            <span>
+                                For cypherpunk hackathon demo purposes, we have
+                                removed the condition check to facilitate access
+                                for all CSY employees.
+                            </span>
+                        </div>
                         <div className="flex flex-col gap-2 mt-6 text-sm">
                             <span className="flex items-center gap-1">
                                 {badges.length > 0 ? "✅" : "❌"} Endorsed by a
-                                CNS Netizen –{" "}
+                                CNS Netizen :{" "}
                                 <span className="text-blue-400">
                                     <Link to={`/netizens/${address}`}>
                                         {badges.length} endorsement
                                         {badges.length > 1 ? "s" : ""}
                                     </Link>
                                 </span>{" "}
-                                (powered by{" "}
+                                <span className="text-gray-500">
+                                    - powered by{" "}
+                                </span>
                                 <a
                                     href="https://explorer.ver.ax/linea"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-yellow-400"
+                                    className="text-gray-500 underline"
                                 >
-                                    Verax Attestation Service
+                                    Verax
                                 </a>
-                                )
                             </span>
                             <span className="flex items-center gap-2">
                                 {cnsBalance > 0 ? "✅" : "❌"} Owner of $CNS
-                                reputation points –{" "}
+                                reputation points :{" "}
                                 <span className="text-blue-400">
                                     <Link to={`/netizens/${address}`}>
                                         {cnsBalance} $CNS
