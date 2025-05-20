@@ -1,7 +1,7 @@
 ---
 title: "Community Values Initiative"
 description: "A framework for collaborative curation of Ethereum community values"
-author: "Consensys Network State"
+author: "CNS DAO"
 date: "2023-10-01"
 tags: ["Community Values", "Ethereum", "Intuition Protocol", "Governance"]
 ---

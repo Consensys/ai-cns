@@ -4,11 +4,13 @@
     "plugins": [
         "@elizaos-plugins/client-slack",
         "@elizaos-plugins/client-telegram",
+        "@elizaos-plugins/client-twitter",
+        "@elizaos-plugins/plugin-web-search",
         "@elizaos/plugin-community-values",
         "@elizaos/plugin-ideation",
         "@elizaos/plugin-reputation"
     ],
-    "clients": ["telegram"],
+    "clients": ["telegram", "twitter", "slack"],
     "modelProvider": "openai",
     "settings": {
         "ragKnowledge": true

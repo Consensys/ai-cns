@@ -1,7 +1,7 @@
 {
     "name": "VitalAIk",
     "username": "VitalAIk",
-    "plugins": ["@elizaos-plugins/client-slack"],
+    "plugins": ["@elizaos-plugins/client-slack", "@elizaos-plugins/plugin-web-search"],
     "modelProvider": "openai",
     "settings": {
         "ragKnowledge": true

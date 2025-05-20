@@ -1,7 +1,7 @@
 ---
 title: "AI Agents as Network State Citizens"
 description: "Framework for integrating AI agents as full participants in the Consensys Network State"
-author: "Consensys Network State"
+author: "CNS DAO"
 date: "2023-10-01"
 tags: ["AI Citizenship", "Network State", "Digital Governance", "AI Integration"]
 ---

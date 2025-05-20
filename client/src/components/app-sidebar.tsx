@@ -55,8 +55,8 @@ export function AppSidebar() {
                                     <span className="font-semibold uppercase text-xl">
                                         CNS
                                     </span>
-                                    <span className="text-xs text-blue-400">
-                                        consensys network state
+                                    <span className="text-[10px] text-blue-400">
+                                        Cypherpunk Network State
                                     </span>
                                 </div>
                             </NavLink>

@@ -25,6 +25,7 @@ import { defaultCharacter } from "./defaultCharacter.ts";
 import { communityValuesPlugin } from "@elizaos/plugin-community-values";
 import { ideationPlugin } from "@elizaos/plugin-ideation";
 import { reputationPlugin } from "@elizaos/plugin-reputation";
+import { webSearchPlugin } from "@elizaos-plugins/plugin-web-search";
 
 
 import JSON5 from 'json5';
@@ -631,6 +632,7 @@ export async function createAgent(
         character,
         // character.plugins are handled when clients are added
         plugins: [
+            webSearchPlugin,
             //bootstrapPlugin,
             //communityValuesPlugin,
             //ideationPlugin,

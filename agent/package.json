@@ -21,6 +21,8 @@
         "@elizaos-plugins/adapter-supabase": "workspace:0.25.6-alpha.1",
         "@elizaos-plugins/client-slack": "workspace:0.25.6-alpha.1",
         "@elizaos-plugins/client-telegram": "workspace:0.25.6-alpha.1",
+        "@elizaos-plugins/client-twitter": "workspace:0.25.6-alpha.1",
+        "@elizaos-plugins/plugin-web-search": "workspace:^",
         "@elizaos/client-direct": "workspace:*",
         "@elizaos/core": "workspace:*",
         "@elizaos/plugin-bootstrap": "workspace:*",

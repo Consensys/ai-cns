@@ -6,4 +6,10 @@
 	url = https://github.com/elizaos-plugins/client-slack
 [submodule "packages/client-telegram"]
 	path = packages/client-telegram
-	url = https://github.com/elizaos-plugins/client-telegram
+	url = git@github.com:elizaos-plugins/client-telegram.git
+[submodule "packages/client-twitter"]
+	path = packages/client-twitter
+	url = git@github.com:elizaos-plugins/client-twitter.git
+[submodule "packages/plugin-web-search"]
+	path = packages/plugin-web-search
+	url = git@github.com:elizaos-plugins/plugin-web-search.git

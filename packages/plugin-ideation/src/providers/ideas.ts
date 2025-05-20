@@ -53,7 +53,6 @@ const ideasProvider: Provider = {
                 return `- **${args.title}** by ${args.ideator} (Score: ${args.score})`;
             });
 
-            console.log("initiatives: ", initiatives);
             return initiatives.length
                 ? `**Recent CNS community ideas, needs or initiatives:**\n${initiatives.join("\n")}`
                 : "No recent initiatives found.";

@@ -1,7 +1,7 @@
 {
     "name": "SatoshAI",
     "username": "SatoshAI",
-    "plugins": ["@elizaos-plugins/client-slack"],
+    "plugins": ["@elizaos-plugins/client-slack", "@elizaos-plugins/plugin-web-search"],
     "modelProvider": "openai",
     "settings": {
         "secrets": {},
