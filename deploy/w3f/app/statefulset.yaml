@@ -34,12 +34,6 @@ spec:
               value: "debug"
             - name: DEFAULT_LOG_LEVEL
               value: "debug"
-            - name: "SLACK_APP_ID"
-              value: "A08F72TBG9H"
-            - name: "SLACK_CLIENT_ID"
-              value: "8497303115941.8517095390323"
-            - name: "SLACK_SERVER_PORT"
-              value: "3069"
             - name: "CHARACTER_VITALAIK_SLACK_APP_ID"
               value: "A08F808GNAF"
             - name: "CHARACTER_VITALAIK_SLACK_CLIENT_ID"
