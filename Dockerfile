@@ -43,6 +43,8 @@ RUN cd /app/packages/client-slack \
     && pnpm add @elizaos/core \
     && cd /app/packages/client-telegram \
     && pnpm add @elizaos/core \
+    && cd /app/packages/plugin-web-search \
+    && pnpm add @elizaos/core \
     && cd /app/packages/client-twitter \
     && pnpm add uuid
 
