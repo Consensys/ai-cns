@@ -42,7 +42,9 @@ RUN git submodule update --init --recursive
 RUN cd /app/packages/client-slack \
     && pnpm add @elizaos/core \
     && cd /app/packages/client-telegram \
-    && pnpm add @elizaos/core
+    && pnpm add @elizaos/core \
+    && cd /app/packages/client-twitter \
+    && pnpm add uuid
 
 # Install dependencies
 RUN pnpm install --no-frozen-lockfile
