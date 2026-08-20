@@ -66,7 +66,7 @@ This contract allows users to create, vote, and track community initiatives with
 ✅ Credit-Based Voting
 
 - Users have a limited credit pool (MAX_CREDITS = 100).
-- First-time voters automatically receive 100 credits.
+- Verified agreement signers receive up to 100 credits when the agreement is signed; voting never regenerates credits.
 - Credits are spent when voting, preventing unlimited influence.
 
 ✅ Preventing Double Voting
@@ -76,7 +76,8 @@ This contract allows users to create, vote, and track community initiatives with
 
 ✅ Status Updates for Initiatives
 
-- The contract owner can update an initiative's status.
+- The contract owner can update an initiative’s status.
+- The initiative contract must be linked to the agreement contract before voting is enabled.
 
 ✅ Owner-Managed Credit System
 

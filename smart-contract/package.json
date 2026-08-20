@@ -65,7 +65,7 @@
     "deploy": "hardhat run scripts/deploy.ts",
     "lint": "yarn lint:sol && yarn lint:ts && yarn prettier:check",
     "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
-    "lint:ts": "ESLINT_USE_FLAT_CONFIG=false eslint --config ./.eslintrc.yaml --ignore-path ./.eslintignore --ext .js,.ts .",
+    "lint:ts": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint --config ./.eslintrc.yaml --ignore-path ./.eslintignore --ext .js,.ts .",
     "prettier": "prettier --config ./.prettierrc.yaml --write \"**/*.{js,json,md,sol,ts,yaml,yml}\"",
     "prettier:check": "prettier --check --config ./.prettierrc.yaml \"**/*.{js,json,md,sol,ts,yaml,yml}\"",
     "test": "hardhat test",
