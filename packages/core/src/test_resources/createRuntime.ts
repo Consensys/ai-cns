@@ -76,15 +76,22 @@ export async function createRuntime({
             const module = await import("@supabase/supabase-js");
 
             const { createClient } = module;
+            const supabaseUrl = env?.SUPABASE_URL ?? SUPABASE_URL;
+            const supabaseKey = env?.SUPABASE_SERVICE_API_KEY ?? env?.SUPABASE_ANON_KEY ?? SUPABASE_ANON_KEY;
+            const testEmail = env?.TEST_SUPABASE_EMAIL ?? TEST_EMAIL;
+            const testPassword = env?.TEST_SUPABASE_PASSWORD ?? TEST_PASSWORD;
 
-            const supabase = createClient(
-                env?.SUPABASE_URL ?? SUPABASE_URL,
-                env?.SUPABASE_SERVICE_API_KEY ?? SUPABASE_ANON_KEY
-            );
+            if (!supabaseUrl || !supabaseKey || !testEmail || !testPassword) {
+                throw new Error(
+                    "Supabase integration tests require SUPABASE_URL, SUPABASE_ANON_KEY or SUPABASE_SERVICE_API_KEY, TEST_SUPABASE_EMAIL, and TEST_SUPABASE_PASSWORD",
+                );
+            }
+
+            const supabase = createClient(supabaseUrl, supabaseKey);
 
             const { data } = await supabase.auth.signInWithPassword({
-                email: TEST_EMAIL!,
-                password: TEST_PASSWORD!,
+                email: testEmail,
+                password: testPassword,
             });
 
             user = data.user as User;
@@ -92,8 +99,8 @@ export async function createRuntime({
 
             if (!session) {
                 const response = await supabase.auth.signUp({
-                    email: TEST_EMAIL!,
-                    password: TEST_PASSWORD!,
+                    email: testEmail,
+                    password: testPassword,
                 });
 
                 // Change the name of the user
@@ -104,7 +111,7 @@ export async function createRuntime({
 
                 if (error) {
                     throw new Error(
-                        "Create runtime error: " + JSON.stringify(error)
+                        `Create runtime error: ${JSON.stringify(error)}`
                     );
                 }
 
@@ -112,10 +119,7 @@ export async function createRuntime({
                 session = response.data.session as unknown as { user: User };
             }
 
-            adapter = new SupabaseDatabaseAdapter(
-                env?.SUPABASE_URL ?? SUPABASE_URL,
-                env?.SUPABASE_SERVICE_API_KEY ?? SUPABASE_ANON_KEY
-            );
+            adapter = new SupabaseDatabaseAdapter(supabaseUrl, supabaseKey);
             break;
         }
         case "pglite":
@@ -135,7 +139,6 @@ export async function createRuntime({
                 };
             }
             break;
-        case "sqlite":
         default:
             {
                 const module = await import("better-sqlite3");
@@ -161,7 +164,7 @@ export async function createRuntime({
     const runtime = new AgentRuntime({
         serverUrl: getEndpoint(ModelProviderName.OPENAI),
         conversationLength,
-        token: env!.OPENAI_API_KEY!,
+        token: env?.OPENAI_API_KEY ?? "",
         modelProvider: ModelProviderName.OPENAI,
         actions: actions ?? [],
         evaluators: evaluators ?? [],
