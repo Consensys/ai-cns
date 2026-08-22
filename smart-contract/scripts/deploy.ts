@@ -5,12 +5,11 @@ import { deployNetworkStateInitiatives } from "./deploy-Initiatives";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
+  const initiativesAddress = await deployNetworkStateInitiatives(deployer, true, false);
+  const agreementAddress = await deployNetworkStateAgreement(deployer, true, false, initiativesAddress);
 
-  // Deploy NetworkStateAgreement
-  await deployNetworkStateAgreement(deployer, true, false);
-
-  // Deploy NetworkStateInitiatives
-  await deployNetworkStateInitiatives(deployer, true, false);
+  const initiatives = await ethers.getContractAt("NetworkStateInitiatives", initiativesAddress, deployer);
+  await initiatives.setAgreementContract(agreementAddress);
 }
 
 main().catch((error) => {

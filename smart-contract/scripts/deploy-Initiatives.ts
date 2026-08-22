@@ -124,10 +124,11 @@ async function fillData(contract: NetworkStateInitiatives) {
     await contract.connect(account).createInitiatives(account, title, description, category, tags, score);
   }
 
-  await updateInitiatives(contract, acc1);
+  await updateInitiatives(contract);
 }
 
-async function updateInitiatives(contract: NetworkStateInitiatives, acc1: SignerWithAddress) {
+async function updateInitiatives(contract: NetworkStateInitiatives) {
+  const [owner] = await ethers.getSigners();
   const initiativesToUpdate = [
     [1, "CAPITAL_ALLOCATION"],
     [2, "CAPITAL_ALLOCATION"],
@@ -135,9 +136,9 @@ async function updateInitiatives(contract: NetworkStateInitiatives, acc1: Signer
   ];
   for (const [id, status] of initiativesToUpdate) {
     const initiative = await contract.initiatives(id);
-    await contract.connect(acc1).updateStatus(initiative.id, status);
+    await contract.connect(owner).updateStatus(initiative.id, status);
     const [addr1, addr2] = await ethers.getSigners();
-    await contract.connect(acc1).addTeamMember(initiative.id, addr1.address);
-    await contract.connect(acc1).addTeamMember(initiative.id, addr2.address);
+    await contract.connect(owner).addTeamMember(initiative.id, addr1.address);
+    await contract.connect(owner).addTeamMember(initiative.id, addr2.address);
   }
 }
