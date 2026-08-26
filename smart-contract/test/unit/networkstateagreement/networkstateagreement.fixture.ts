@@ -25,6 +25,7 @@ export async function deployNetworkStateAgreementFixture() {
     treasuryAddress,
   )) as NetworkStateAgreement;
   const networkStateAgreementAddress = await networkStateAgreement.getAddress();
+  await Initiativescontract.setAgreementContract(networkStateAgreementAddress);
 
   return {
     networkStateAgreement,

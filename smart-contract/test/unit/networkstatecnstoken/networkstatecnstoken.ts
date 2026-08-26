@@ -78,9 +78,10 @@ describe("CNSToken", function () {
 
     it("Should prevent non-minters from minting", async function () {
       const { cnsToken, user1 } = await this.loadFixture(deployCNSTokenFixture);
+      const minterRole = await cnsToken.MINTER_ROLE();
 
       await expect(cnsToken.connect(user1).mint(user1.address, ethers.parseEther("10"))).to.be.revertedWith(
-        "AccessControl: account 0x644d7d4057fe667cd000038f6032c1f825b66ee0 is missing role 0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6",
+        `AccessControl: account ${user1.address.toLowerCase()} is missing role ${minterRole}`,
       );
     });
 

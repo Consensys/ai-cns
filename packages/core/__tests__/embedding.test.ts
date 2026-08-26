@@ -1,10 +1,4 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
-import {
-    embed,
-    getEmbeddingConfig,
-    getEmbeddingType,
-    getEmbeddingZeroVector,
-} from "../src/embedding.ts";
 import { type IAgentRuntime, ModelProviderName } from "../src/types.ts";
 import settings from "../src/settings.ts";
 
@@ -38,12 +32,14 @@ vi.mock("fastembed", () => ({
 
 // Mock global fetch for remote embedding requests
 const mockFetch = vi.fn();
-(global as any).fetch = mockFetch;
+globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 describe("Embedding Module", () => {
     let mockRuntime: IAgentRuntime;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        vi.resetModules(); // Clear module cache before each test to ensure fresh imports
+        
         // Prepare a mock runtime
         mockRuntime = {
             character: {
@@ -61,15 +57,17 @@ describe("Embedding Module", () => {
     });
 
     describe("getEmbeddingConfig", () => {
-        test("should return BGE config by default", () => {
+        test("should return BGE config by default", async () => {
+            const { getEmbeddingConfig } = await import("../src/embedding.ts");
             const config = getEmbeddingConfig();
             expect(config.dimensions).toBe(384);
             expect(config.model).toBe("BGE-small-en-v1.5");
             expect(config.provider).toBe("BGE");
         });
 
-        test("should return OpenAI config when USE_OPENAI_EMBEDDING is true", () => {
+        test("should return OpenAI config when USE_OPENAI_EMBEDDING is true", async () => {
             vi.mocked(settings).USE_OPENAI_EMBEDDING = "true";
+            const { getEmbeddingConfig } = await import("../src/embedding.ts");
             const config = getEmbeddingConfig();
             expect(config.dimensions).toBe(1536);
             expect(config.model).toBe("text-embedding-3-small");
@@ -78,13 +76,15 @@ describe("Embedding Module", () => {
     });
 
     describe("getEmbeddingType", () => {
-        test("should return 'remote' for Ollama provider", () => {
+        test("should return 'remote' for Ollama provider", async () => {
+            const { getEmbeddingType } = await import("../src/embedding.ts");
             const type = getEmbeddingType(mockRuntime);
             expect(type).toBe("remote");
         });
 
-        test("should return 'remote' for OpenAI provider", () => {
+        test("should return 'remote' for OpenAI provider", async () => {
             mockRuntime.character.modelProvider = ModelProviderName.OPENAI;
+            const { getEmbeddingType } = await import("../src/embedding.ts");
             const type = getEmbeddingType(mockRuntime);
             expect(type).toBe("remote");
         });
@@ -97,14 +97,16 @@ describe("Embedding Module", () => {
             vi.mocked(settings).USE_GAIANET_EMBEDDING = "false";
         });
 
-        test("should return 384-length zero vector by default (BGE)", () => {
+        test("should return 384-length zero vector by default (BGE)", async () => {
+            const { getEmbeddingZeroVector } = await import("../src/embedding.ts");
             const vector = getEmbeddingZeroVector();
             expect(vector).toHaveLength(384);
             expect(vector.every((val) => val === 0)).toBe(true);
         });
 
-        test("should return 1536-length zero vector for OpenAI if enabled", () => {
+        test("should return 1536-length zero vector for OpenAI if enabled", async () => {
             vi.mocked(settings).USE_OPENAI_EMBEDDING = "true";
+            const { getEmbeddingZeroVector } = await import("../src/embedding.ts");
             const vector = getEmbeddingZeroVector();
             expect(vector).toHaveLength(1536);
             expect(vector.every((val) => val === 0)).toBe(true);
@@ -124,11 +126,13 @@ describe("Embedding Module", () => {
         });
 
         test("should return an empty array for empty input text", async () => {
+            const { embed } = await import("../src/embedding.ts");
             const result = await embed(mockRuntime, "");
             expect(result).toEqual([]);
         });
 
         test("should return cached embedding if it already exists", async () => {
+            const { embed } = await import("../src/embedding.ts");
             const cachedEmbedding = new Array(384).fill(0.5);
             mockRuntime.messageManager.getCachedEmbeddings = vi
                 .fn()
@@ -139,18 +143,23 @@ describe("Embedding Module", () => {
         });
 
         test("should handle local embedding successfully (fastembed fallback)", async () => {
-            // By default, it tries local first if in Node.
-            // Then uses the mock fastembed response above.
+            const { embed } = await import("../src/embedding.ts");
             const result = await embed(mockRuntime, "test input");
             expect(result).toHaveLength(384);
             expect(result.every((v) => typeof v === "number")).toBe(true);
         });
 
         test("should fallback to remote if local embedding fails", async () => {
-            // Force fastembed import to fail
-            vi.mock("fastembed", () => {
-                throw new Error("Module not found");
-            });
+            // Simulate local embedding failure by making FlagEmbedding.init reject
+            vi.doMock("fastembed", () => ({
+                FlagEmbedding: {
+                    init: vi.fn().mockRejectedValue(new Error("Module not found")),
+                },
+                EmbeddingModel: {
+                    BGESmallENV15: "BGE-small-en-v1.5",
+                },
+            }));
+            vi.resetModules();
 
             // Mock a valid remote response
             const mockResponse = {
@@ -162,6 +171,7 @@ describe("Embedding Module", () => {
             };
             mockFetch.mockResolvedValueOnce(mockResponse);
 
+            const { embed } = await import("../src/embedding.ts");
             const result = await embed(mockRuntime, "test input");
             expect(result).toHaveLength(384);
             expect(mockFetch).toHaveBeenCalled();
@@ -171,6 +181,7 @@ describe("Embedding Module", () => {
             mockFetch.mockRejectedValueOnce(new Error("API Error"));
             vi.mocked(settings).USE_OPENAI_EMBEDDING = "true"; // Force remote
 
+            const { embed } = await import("../src/embedding.ts");
             await expect(embed(mockRuntime, "test input")).rejects.toThrow(
                 "API Error"
             );
@@ -186,12 +197,14 @@ describe("Embedding Module", () => {
             mockFetch.mockResolvedValueOnce(errorResponse);
             vi.mocked(settings).USE_OPENAI_EMBEDDING = "true"; // Force remote
 
+            const { embed } = await import("../src/embedding.ts");
             await expect(embed(mockRuntime, "test input")).rejects.toThrow(
                 "Embedding API Error"
             );
         });
 
         test("should handle concurrent embedding requests", async () => {
+            const { embed } = await import("../src/embedding.ts");
             const promises = Array(5)
                 .fill(null)
                 .map(() => embed(mockRuntime, "concurrent test"));

@@ -129,7 +129,7 @@ describe("Model Provider Configuration", () => {
     });
     describe("Livepeer Provider", () => {
         test("should have correct endpoint configuration", () => {
-            expect(getEndpoint(ModelProviderName.LIVEPEER)).toBe("https://dream-gateway.livepeer.cloud");
+            expect(getEndpoint(ModelProviderName.LIVEPEER)).toBe("http://gateway.test-gateway");
         });
 
         test("should have correct model mappings", () => {
@@ -171,7 +171,7 @@ describe("Model Retrieval Functions", () => {
 
         test("Test to ensure an invalid model provider returns undefined", () => {
             expect(
-                getModelSettings("INVALID_PROVIDER" as any, ModelClass.SMALL)
+                getModelSettings("INVALID_PROVIDER" as never, ModelClass.SMALL)
             ).toBe(undefined);
         });
     });
@@ -190,33 +190,33 @@ describe("Model Retrieval Functions", () => {
         });
 
         test("should throw error for invalid provider", () => {
-            expect(() => getEndpoint("INVALID_PROVIDER" as any)).toThrow();
+            expect(() => getEndpoint("INVALID_PROVIDER" as never)).toThrow();
         });
     });
 });
 
 describe("Model Settings Validation", () => {
     test("all providers should have required settings", () => {
-        Object.values(ModelProviderName).forEach((provider) => {
+        for (const provider of Object.values(ModelProviderName)) {
             const providerConfig = models[provider];
             if (!providerConfig || !providerConfig.model) {
-                return; // Skip providers that are not fully configured
+                continue; // Skip providers that are not fully configured
             }
             const smallModel = providerConfig.model[ModelClass.SMALL];
             if (!smallModel) {
-                return; // Skip if small model is not configured
+                continue; // Skip if small model is not configured
             }
             expect(smallModel.maxInputTokens).toBeGreaterThan(0);
             expect(smallModel.maxOutputTokens).toBeGreaterThan(0);
             expect(smallModel.temperature).toBeDefined();
-        });
+        }
     });
 
     test("all providers should have model mappings for basic model classes", () => {
-        Object.values(ModelProviderName).forEach((provider) => {
+        for (const provider of Object.values(ModelProviderName)) {
             const providerConfig = models[provider];
             if (!providerConfig || !providerConfig.model) {
-                return; // Skip providers that are not fully configured
+                continue; // Skip providers that are not fully configured
             }
             if (providerConfig.model[ModelClass.SMALL]) {
                 expect(providerConfig.model[ModelClass.SMALL].name).toBeDefined();
@@ -227,7 +227,7 @@ describe("Model Settings Validation", () => {
             if (providerConfig.model[ModelClass.LARGE]) {
                 expect(providerConfig.model[ModelClass.LARGE].name).toBeDefined();
             }
-        });
+        }
     });
 });
 
@@ -255,7 +255,7 @@ describe("Generation with Livepeer", () => {
     });
 
     test("should use default image model", () => {
-        delete process.env.IMAGE_LIVEPEER_MODEL;
+        process.env.IMAGE_LIVEPEER_MODEL = undefined;
         expect(getImageModelSettings(ModelProviderName.LIVEPEER)?.name).toBe("ByteDance/SDXL-Lightning");
     });
 });

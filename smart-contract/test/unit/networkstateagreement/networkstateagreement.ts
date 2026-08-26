@@ -5,6 +5,29 @@ import { ethers } from "hardhat";
 import type { Signers } from "../../common/types";
 import { deployNetworkStateAgreementFixture } from "./networkstateagreement.fixture";
 
+async function signAgreementPayload(
+  contractAddress: string,
+  signer: { address: string; signMessage(message: Uint8Array): Promise<string> },
+  profile: string,
+  nature: string,
+  constitutionHash: string,
+) {
+  const payloadHash = ethers.keccak256(
+    ethers.AbiCoder.defaultAbiCoder().encode(
+      ["address", "uint256", "address", "string", "string", "bytes32"],
+      [
+        contractAddress,
+        (await ethers.provider.getNetwork()).chainId,
+        signer.address,
+        profile,
+        nature,
+        constitutionHash,
+      ],
+    ),
+  );
+  return signer.signMessage(ethers.getBytes(payloadHash));
+}
+
 describe("NetworkStateAgreement", function () {
   before(async function () {
     this.signers = {} as Signers;
@@ -15,7 +38,6 @@ describe("NetworkStateAgreement", function () {
     this.signers.user2 = signers[2];
 
     this.constitutionHash = ethers.keccak256(ethers.toUtf8Bytes("A long constitution to empower decentralization"));
-    this.signature = await this.signers.user1.signMessage(ethers.getBytes(this.constitutionHash));
 
     this.loadFixture = loadFixture;
   });
@@ -35,6 +57,13 @@ describe("NetworkStateAgreement", function () {
     beforeEach(async function () {
       const { networkStateAgreement } = await this.loadFixture(deployNetworkStateAgreementFixture);
       this.networkStateAgreement = networkStateAgreement;
+      this.signature = await signAgreementPayload(
+        await networkStateAgreement.getAddress(),
+        this.signers.user1,
+        "maker",
+        "human",
+        this.constitutionHash,
+      );
     });
 
     it("should allow a user to sign the agreement", async function () {
@@ -52,10 +81,17 @@ describe("NetworkStateAgreement", function () {
     });
 
     it("should forward Ether to treasury when signing agreement with ETH", async function () {
+      const signature = await signAgreementPayload(
+        await this.networkStateAgreement.getAddress(),
+        this.signers.user2,
+        "instigator",
+        "AI",
+        this.constitutionHash,
+      );
       await expect(
         this.networkStateAgreement
           .connect(this.signers.user2)
-          .signAgreement("instigator", "AI", this.constitutionHash, this.signature, { value: ethers.parseEther("1") }),
+          .signAgreement("instigator", "AI", this.constitutionHash, signature, { value: ethers.parseEther("1") }),
       ).to.changeEtherBalance(await this.networkStateAgreement.networkStateTreasury(), ethers.parseEther("1"));
     });
 
@@ -86,12 +122,27 @@ describe("NetworkStateAgreement", function () {
           .signAgreement("maker", "alien", this.constitutionHash, this.signature),
       ).to.be.revertedWith("Invalid nature agent");
     });
+
+    it("should reject a signature produced for a different caller", async function () {
+      await expect(
+        this.networkStateAgreement
+          .connect(this.signers.user2)
+          .signAgreement("maker", "human", this.constitutionHash, this.signature),
+      ).to.be.revertedWith("Invalid signature");
+    });
   });
 
   describe("Owner Functions", function () {
     beforeEach(async function () {
       const { networkStateAgreement } = await this.loadFixture(deployNetworkStateAgreementFixture);
       this.networkStateAgreement = networkStateAgreement;
+      this.signature = await signAgreementPayload(
+        await networkStateAgreement.getAddress(),
+        this.signers.user1,
+        "maker",
+        "human",
+        this.constitutionHash,
+      );
     });
 
     it("should allow owner to update constitution URL", async function () {
@@ -119,7 +170,7 @@ describe("NetworkStateAgreement", function () {
       ).to.be.revertedWith("Invalid address");
     });
 
-    it("should allow anyone to update initiatives contract address", async function () {
+    it("should allow the owner to update initiatives contract address", async function () {
       const newInitiativesContract = ethers.Wallet.createRandom().address;
       await this.networkStateAgreement.connect(this.signers.admin).updateInitiativesContract(newInitiativesContract);
 

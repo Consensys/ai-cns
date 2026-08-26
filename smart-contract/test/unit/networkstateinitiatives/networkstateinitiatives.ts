@@ -109,10 +109,18 @@ describe("NetworkStateInitiatives", function () {
       );
     });
 
-    it("should auto-initialize credits if user has none", async function () {
-      await this.networkStateInitiatives.connect(this.signers.user2).upvote(this.initiative.id, 1);
-      const credits = await this.networkStateInitiatives.userCredits(this.signers.user2.address);
-      expect(credits).to.equal(99);
+    it("should not regenerate credits after the initial agreement allocation is exhausted", async function () {
+      await this.networkStateInitiatives.connect(this.signers.user2).upvote(this.initiative.id, 10);
+      expect(await this.networkStateInitiatives.userCredits(this.signers.user2.address)).to.equal(0);
+
+      await this.networkStateInitiatives
+        .connect(this.signers.admin)
+        .createInitiatives(this.signers.admin.address, "Second initiative", "Description", "Governance", [], 1);
+      const secondInitiative = await this.networkStateInitiatives.initiatives(1);
+
+      await expect(
+        this.networkStateInitiatives.connect(this.signers.user2).upvote(secondInitiative.id, 1),
+      ).to.be.revertedWith("Not enough credits");
     });
 
     it("should revert if vote cost exceeds user credits", async function () {
@@ -156,22 +164,22 @@ describe("NetworkStateInitiatives", function () {
       expect(balanceAfter).to.be.gt(balanceBefore);
     });
 
-    it("should allow instigator to withdraw funding", async function () {
-      await this.networkStateInitiatives.connect(this.signers.user1).upvote(this.initiative.id, 10); // become instigator
+    it("should allow the owner-instigator to withdraw funding", async function () {
+      await this.networkStateInitiatives.connect(this.signers.user1).upvote(this.initiative.id, 10);
       await this.networkStateInitiatives
-        .connect(this.signers.user1)
+        .connect(this.signers.admin)
         .updateStatus(this.initiative.id, "CAPITAL_ALLOCATION");
       await this.networkStateInitiatives
         .connect(this.signers.user1)
         .allocateFund(this.initiative.id, { value: ethers.parseEther("1") });
 
-      const balanceBefore = await ethers.provider.getBalance(this.signers.user1.address);
+      const balanceBefore = await ethers.provider.getBalance(this.signers.admin.address);
       const tx = await this.networkStateInitiatives
-        .connect(this.signers.user1)
+        .connect(this.signers.admin)
         .withdrawInitiativeFunding(this.initiative.id);
       const receipt = await tx.wait();
       const gasUsed = receipt.gasUsed * receipt.gasPrice;
-      const balanceAfter = await ethers.provider.getBalance(this.signers.user1.address);
+      const balanceAfter = await ethers.provider.getBalance(this.signers.admin.address);
 
       expect(balanceAfter).to.be.closeTo(
         balanceBefore + ethers.parseEther("0.9") - BigInt(gasUsed),
@@ -217,6 +225,25 @@ describe("NetworkStateInitiatives", function () {
       );
     });
 
+    it("should reject credit updates from non-managers", async function () {
+      await expect(
+        this.networkStateInitiatives.connect(this.signers.user1).updateUserCredits(this.signers.user2.address, 100),
+      ).to.be.revertedWith("Only credit manager can call this");
+    });
+
+    it("should reject unknown initiative identifiers", async function () {
+      const unknownId = ethers.keccak256(ethers.toUtf8Bytes("unknown initiative"));
+
+      await expect(this.networkStateInitiatives.connect(this.signers.user1).upvote(unknownId, 1)).to.be.revertedWith(
+        "Initiative not found",
+      );
+      await expect(
+        this.networkStateInitiatives.connect(this.signers.user1).allocateFund(unknownId, {
+          value: ethers.parseEther("1"),
+        }),
+      ).to.be.revertedWith("Initiative not found");
+    });
+
     it("should handle downvoting correctly and deduct quadratic credits", async function () {
       await this.networkStateInitiatives.connect(this.signers.user1).downvote(this.initiative.id, 2);
       const credits = await this.networkStateInitiatives.userCredits(this.signers.user1.address);
@@ -252,6 +279,12 @@ describe("NetworkStateInitiatives", function () {
       await expect(
         this.networkStateInitiatives.connect(this.signers.admin).updateStatus(this.initiative.id, "INVALID_STATUS"),
       ).to.be.revertedWith("Invalid status");
+    });
+
+    it("should reject status updates from non-owners", async function () {
+      await expect(
+        this.networkStateInitiatives.connect(this.signers.user1).updateStatus(this.initiative.id, "BUILDING"),
+      ).to.be.revertedWith("Only owner can call this");
     });
   });
 });
